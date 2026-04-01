@@ -171,6 +171,56 @@ def _keyword_filter(papers: list[dict], keywords: list[str]) -> list[dict]:
     return filtered
 
 
+_STOP_WORDS = {
+    "a", "an", "the", "of", "in", "for", "on", "with", "to", "and", "or",
+    "is", "are", "via", "from", "by", "as", "at", "its", "we", "our",
+}
+
+
+def rank_papers(
+    papers: list[dict],
+    keywords: list[str],
+    past_papers: list[str],
+) -> list[dict]:
+    """Score and sort papers by relevance to the user profile.
+
+    Scoring components:
+    - Keyword density: occurrences in title (3×) + abstract (1×)
+    - Past-paper word overlap: meaningful title-word matches with user's own papers (2× each)
+
+    Papers are returned sorted by score descending. Papers with equal scores
+    preserve their original order (stable sort).
+    """
+    if not keywords and not past_papers:
+        return papers
+
+    lower_keywords = [k.lower() for k in keywords if k.strip()]
+
+    past_words: set[str] = set()
+    for title in past_papers:
+        for word in title.lower().split():
+            word = word.strip(".,;:()")
+            if word not in _STOP_WORDS and len(word) > 2:
+                past_words.add(word)
+
+    def _score(paper: dict) -> float:
+        title_lower = paper["title"].lower()
+        abstract_lower = paper["abstract"].lower()
+        score = 0.0
+
+        for kw in lower_keywords:
+            score += title_lower.count(kw) * 3
+            score += abstract_lower.count(kw)
+
+        if past_words:
+            title_words = {w.strip(".,;:()") for w in title_lower.split()}
+            score += len(title_words & past_words) * 2
+
+        return score
+
+    return sorted(papers, key=_score, reverse=True)
+
+
 def fetch_papers(
     categories: list[str],
     keywords: list[str],
