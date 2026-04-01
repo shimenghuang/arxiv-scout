@@ -9,6 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
-# Temp files
+# Runtime data
 data/.analysis_cache.json
 data/.scholar_cache.json
+data/reports/
+data/cache.db

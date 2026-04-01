@@ -11,6 +11,7 @@ Run directly as a script: python mcp_server/server.py
 Uses stdio transport (the standard for Claude Code MCP integrations).
 """
 
+import datetime
 import json
 import sys
 from pathlib import Path
@@ -81,7 +82,6 @@ _ANALYSIS_CACHE_PATH = _PROJECT_ROOT / "data" / ".analysis_cache.json"
 def _load_scholar_cache(scholar_url: str) -> dict:
     """Return cached Scholar data if fresh, otherwise re-fetch and cache.
     TTL is read from settings.yaml (scholar_cache_ttl_days)."""
-    import datetime
     ttl_days = _load_settings().get("scholar_cache_ttl_days", 30)
     if _SCHOLAR_CACHE_PATH.exists():
         try:
@@ -93,7 +93,6 @@ def _load_scholar_cache(scholar_url: str) -> dict:
             pass
     data = build_profile_from_scholar(scholar_url)
     if data["scholar_fetched"]:
-        import datetime
         _SCHOLAR_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
         _SCHOLAR_CACHE_PATH.write_text(
             json.dumps({"fetched_on": datetime.date.today().isoformat(), "past_papers": data["past_papers"]},
@@ -105,7 +104,6 @@ def _load_scholar_cache(scholar_url: str) -> dict:
 
 def _save_report(report: str, output_dir: str, date_str: str | None = None) -> Path:
     """Save report to a dated markdown file, avoiding overwrites. Returns the path written."""
-    import datetime
     out_dir = _PROJECT_ROOT / output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     if not date_str:
@@ -181,13 +179,15 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="rank_and_display",
             description=(
-                "Read the cached analysis, sort by novelty score, and render the top-N papers "
-                "as a readable markdown report. Call after Claude has written the analysis to "
-                "data/.analysis_cache.json."
+                "Sort Claude's analysis by novelty score and render the top-N papers "
+                "as a readable markdown report."
             ),
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "analysis_json": {
+                        "description": "The structured analysis array produced by Claude.",
+                    },
                     "top_n": {
                         "type": "integer",
                         "description": "Number of top papers to include. Defaults to the value in user_profile.yaml.",
@@ -197,7 +197,7 @@ async def list_tools() -> list[Tool]:
                         "description": "ISO date string (YYYY-MM-DD) of the papers being scouted. Used for the report filename. Defaults to today.",
                     },
                 },
-                "required": [],
+                "required": ["analysis_json"],
             },
         ),
     ]
@@ -254,7 +254,6 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         return [TextContent(type="text", text=json.dumps(profile, ensure_ascii=False, indent=2))]
 
     elif name == "analyze_papers":
-        (_PROJECT_ROOT / "data").mkdir(exist_ok=True)
         profile_cfg = _load_profile()
         settings = _load_settings()
         profile = {
@@ -268,9 +267,12 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         return [TextContent(type="text", text=prompt)]
 
     elif name == "rank_and_display":
-        if not _ANALYSIS_CACHE_PATH.exists():
-            return [TextContent(type="text", text="No analysis cache found. Run store_analysis first.")]
-        analysis_json = _ANALYSIS_CACHE_PATH.read_text(encoding="utf-8")
+        analysis_json = arguments.get("analysis_json")
+        if not analysis_json:
+            return [TextContent(type="text", text="No analysis_json provided.")]
+        if not isinstance(analysis_json, str):
+            import json as _json
+            analysis_json = _json.dumps(analysis_json)
         settings = _load_settings()
         top_n = arguments.get("top_n", settings["top_n"])
 

@@ -4,11 +4,7 @@
       "mcp__arxiv-scout__get_user_profile",
       "mcp__arxiv-scout__fetch_papers",
       "mcp__arxiv-scout__analyze_papers",
-      "mcp__arxiv-scout__rank_and_display",
-      "Write(data/.analysis_cache.json)",
-      "Write(data/)",
-      "Edit(data/.analysis_cache.json)",
-      "Edit(data/)"
+      "mcp__arxiv-scout__rank_and_display"
     ]
   }
 }

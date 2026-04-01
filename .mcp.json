@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "arxiv-scout": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "mcp_server/server.py"]
+    }
+  }
+}
