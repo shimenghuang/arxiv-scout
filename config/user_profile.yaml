@@ -6,7 +6,7 @@
 # This allows arxiv-scout to load your past paper titles and score relevance
 # relative to your actual research history.
 # Example: https://scholar.google.com/citations?user=XXXXXXXXX&sortby=pubdate
-scholar_url: "https://scholar.google.com/citations?user=e5SybJkAAAAJ&hl=en"
+scholar_url: ""  # e.g. "https://scholar.google.com/citations?user=XXXXXXXXX&sortby=pubdate"
 
 # ── arxiv categories to monitor ──────────────────────────────────────────────
 # Full list of category codes: https://arxiv.org/category_taxonomy
@@ -21,9 +21,7 @@ arxiv_categories:
 # these keywords (case-insensitive substring match).
 # Leave the list empty (or with empty strings) to skip filtering and analyze
 # all fetched papers.
-keywords:
-  - "Causality"
-  - "Forecasting"
+keywords: []  # e.g. ["causality", "forecasting", "diffusion models"]
 
 # ── Ranking criteria ─────────────────────────────────────────────────────────
 # Describe in plain language what makes a paper opportunity exciting to YOU.
