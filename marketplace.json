@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "shimenghuang-arxiv-scout",
+  "description": "Fetch, analyze, and rank today's arxiv preprints by research opportunity — personalized to your profile and past papers",
+  "owner": {
+    "name": "Shimeng Huang",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "arxiv-scout",
+      "description": "Daily arxiv paper scout: fetches papers in your categories, ranks them by relevance to your research profile, and produces a clean markdown report via /scout",
+      "source": "./",
+      "category": "productivity",
+      "version": "0.1.0",
+      "license": "MIT",
+      "keywords": ["arxiv", "research", "papers", "academic", "literature-review"]
+    }
+  ]
+}

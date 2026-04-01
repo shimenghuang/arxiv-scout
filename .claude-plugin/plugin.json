@@ -1,0 +1,12 @@
+{
+  "name": "arxiv-scout",
+  "version": "0.1.0",
+  "description": "Daily arxiv paper scout — fetches, ranks, and analyzes preprints personalized to your research profile",
+  "author": {
+    "name": "Shimeng Huang",
+    "url": "https://github.com/shimenghuang"
+  },
+  "repository": "https://github.com/shimenghuang/arxiv-scout",
+  "license": "MIT",
+  "keywords": ["arxiv", "research", "papers", "academic", "literature-review"]
+}
