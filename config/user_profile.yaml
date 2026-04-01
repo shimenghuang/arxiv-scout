@@ -1,0 +1,35 @@
+# arxiv-scout user profile
+# Edit this file to personalize which papers get fetched and how they're ranked.
+
+# ── Scholar integration ──────────────────────────────────────────────────────
+# Your Google Scholar profile URL (optional but strongly recommended).
+# This allows arxiv-scout to load your past paper titles and score relevance
+# relative to your actual research history.
+# Example: https://scholar.google.com/citations?user=XXXXXXXXX&sortby=pubdate
+scholar_url: "https://scholar.google.com/citations?user=e5SybJkAAAAJ&hl=en"
+
+# ── arxiv categories to monitor ──────────────────────────────────────────────
+# Full list of category codes: https://arxiv.org/category_taxonomy
+# Papers from ALL listed categories are fetched and merged before filtering.
+arxiv_categories:
+  - cs.LG   # Machine Learning
+  - cs.CL   # Computation and Language
+  - cs.AI   # Artificial Intelligence
+
+# ── Keyword pre-filter ───────────────────────────────────────────────────────
+# Papers are kept only if their title OR abstract contains at least one of
+# these keywords (case-insensitive substring match).
+# Leave the list empty (or with empty strings) to skip filtering and analyze
+# all fetched papers.
+keywords:
+  - "Causality"
+  - "Forecasting"
+
+# ── Ranking criteria ─────────────────────────────────────────────────────────
+# Describe in plain language what makes a paper opportunity exciting to YOU.
+# Claude uses this when assigning novelty scores — be specific.
+# Examples:
+#   "prioritize methods that improve sample efficiency in reinforcement learning"
+#   "favor work combining language models with structured knowledge representations"
+#   "focus on practical applications with clear evaluation on real-world benchmarks"
+ranking_criteria: "prioritize novel research directions with clear empirical methodology"

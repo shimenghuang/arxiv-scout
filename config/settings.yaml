@@ -1,0 +1,23 @@
+# arxiv-scout settings
+# Display and output preferences. Edit this file to control how results are shown and saved.
+
+# ── Display settings ──────────────────────────────────────────────────────────
+# Number of top-ranked papers to show in the final report.
+top_n: 5
+
+# Maximum number of papers to send to Claude for analysis after keyword filtering.
+# Larger values give more thorough coverage but use more context window.
+max_papers_to_analyze: 20
+
+# ── Scholar cache settings ────────────────────────────────────────────────────
+# How many days to cache your Google Scholar paper list before re-fetching.
+# Delete data/.scholar_cache.json to force an immediate refresh.
+scholar_cache_ttl_days: 30
+
+# ── Output / save settings ────────────────────────────────────────────────────
+# Set to true to automatically save each report as a markdown file.
+save_output: true
+
+# Directory where reports are saved (relative to the project root).
+# Each report is named: YYYY-MM-DD.md  (or YYYY-MM-DD_2.md if a file already exists for that date)
+output_dir: "data/reports"
