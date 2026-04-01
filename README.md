@@ -11,18 +11,14 @@ A Claude Code MCP server that fetches, analyzes, and ranks daily arxiv preprints
 
 ## Setup
 
+**Prerequisite:** [uv](https://docs.astral.sh/uv/getting-started/installation/) must be installed.
+
 ### 1. Clone and install dependencies
 
 ```bash
 git clone https://github.com/your-username/arxiv-scout
 cd arxiv-scout
 uv sync
-```
-
-Or with pip:
-
-```bash
-pip install mcp httpx pyyaml
 ```
 
 ### 2. Edit your profile
@@ -36,9 +32,11 @@ Open `config/user_profile.yaml` and fill in:
 
 ### 3. Open the project in Claude Code
 
-The project includes a `.mcp.json` that registers the arxiv-scout MCP server automatically. When you open the project directory in Claude Code, it will prompt you to trust the server — approve it, and you're done.
+```bash
+claude
+```
 
-No manual `claude mcp add` needed.
+The project includes a `.mcp.json` that registers the arxiv-scout MCP server automatically. Claude Code will prompt you to trust the server on first open — approve it, and you're done. No manual setup needed.
 
 ### 4. Run
 

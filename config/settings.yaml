@@ -5,6 +5,9 @@
 # Number of top-ranked papers to show in the final report.
 top_n: 5
 
+# Maximum number of papers to fetch from the arxiv API before keyword filtering.
+max_papers_to_fetch: 200
+
 # Maximum number of papers to send to Claude for analysis after keyword filtering.
 # Larger values give more thorough coverage but use more context window.
 max_papers_to_analyze: 10

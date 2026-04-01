@@ -28,7 +28,7 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Tool, TextContent
 
-from mcp_server.tools.arxiv import fetch_papers as _fetch_papers
+from mcp_server.tools.arxiv import fetch_papers as _fetch_papers, rank_papers as _rank_papers
 from mcp_server.tools.scholar import build_profile_from_scholar
 from mcp_server.tools.analysis import build_analysis_prompt, rank_and_display as _rank_and_display
 
@@ -60,6 +60,7 @@ def _load_settings() -> dict:
     """Load settings.yaml, returning defaults if the file is missing or malformed."""
     defaults = {
         "top_n": 10,
+        "max_papers_to_fetch": 200,
         "max_papers_to_analyze": 50,
         "save_output": True,
         "output_dir": "data/reports",
@@ -139,11 +140,6 @@ async def list_tools() -> list[Tool]:
                         "type": "string",
                         "description": "ISO date string (YYYY-MM-DD) to fetch papers for. Defaults to today.",
                     },
-                    "max_results": {
-                        "type": "integer",
-                        "description": "Maximum number of papers to fetch from arxiv before keyword filtering. Defaults to 200.",
-                        "default": 200,
-                    },
                 },
                 "required": [],
             },
@@ -213,16 +209,22 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         profile = _load_profile()
         settings = _load_settings()
         target_date = arguments.get("target_date")
-        max_results = arguments.get("max_results", 200)
 
         papers = _fetch_papers(
             categories=profile["arxiv_categories"],
             keywords=profile["keywords"],
-            max_results=max_results,
+            max_results=settings["max_papers_to_fetch"],
             target_date=target_date,
         )
 
-        # Cap to max_papers_to_analyze so we don't overwhelm the analysis step
+        # Load past papers for relevance scoring (uses cache, no network call if fresh)
+        past_papers: list[str] = []
+        if profile.get("scholar_url"):
+            scholar_data = _load_scholar_cache(profile["scholar_url"])
+            past_papers = scholar_data.get("past_papers", [])
+
+        # Rank by relevance, then cap to max_papers_to_analyze
+        papers = _rank_papers(papers, profile["keywords"], past_papers)
         cap = settings["max_papers_to_analyze"]
         if len(papers) > cap:
             papers = papers[:cap]
