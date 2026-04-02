@@ -82,25 +82,26 @@ Claude will fetch today's papers, analyze them against your profile, and display
 
 ```
 arxiv-scout/
-├── .mcp.json                   ← auto-registers the MCP server with Claude Code
+├── .mcp.json                       ← auto-registers the MCP server with Claude Code
 ├── .claude/
-│   ├── settings.json           ← pre-approves MCP tool calls (no per-step prompts)
-│   └── skills/scout/
-│       └── SKILL.md            ← /scout skill definition
+│   ├── settings.json               ← pre-approves MCP tool calls (no per-step prompts)
+│   └── skills/
+│       ├── scout/SKILL.md          ← /scout skill definition
+│       └── scout-setup/SKILL.md   ← /scout-setup skill definition
 ├── mcp_server/
-│   ├── server.py               ← MCP server (stdio transport)
+│   ├── server.py                   ← MCP server (stdio transport)
 │   └── tools/
-│       ├── arxiv.py            ← arxiv API fetch + SQLite cache
-│       ├── scholar.py          ← Google Scholar profile parser
-│       └── analysis.py         ← prompt builder + report formatter
+│       ├── arxiv.py                ← arxiv API fetch + SQLite cache
+│       ├── scholar.py              ← Google Scholar profile parser
+│       └── analysis.py            ← prompt builder + report formatter
 ├── prompts/
-│   └── analyze.md              ← analysis prompt template
-├── config/
-│   ├── user_profile.yaml       ← your personalization config
-│   └── settings.yaml           ← display and output preferences
-└── data/                       ← created at runtime (gitignored)
-    ├── cache.db                ← arxiv SQLite cache
-    └── reports/                ← saved markdown reports
+│   └── analyze.md                  ← analysis prompt template
+├── config/                         ← fallback config (overridden by ~/.claude-plugin-config/arxiv-scout/)
+│   ├── user_profile.yaml
+│   └── settings.yaml
+└── data/                           ← created at runtime (gitignored)
+    ├── cache.db                    ← arxiv SQLite cache
+    └── reports/                    ← saved markdown reports
 ```
 
 ## Notes
