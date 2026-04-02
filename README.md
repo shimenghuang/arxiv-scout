@@ -49,13 +49,15 @@ Then open the project directory in Claude Code.
 
 ### 3. Configure your profile
 
-Run the setup skill to personalize arxiv-scout to your research interests:
+**Option A — interactive (recommended):** run the setup skill in Claude Code:
 
 ```
 /scout-setup
 ```
 
-This walks you through setting your Scholar URL, arxiv categories, keywords, and ranking preferences. Run it once — settings are saved to `~/.claude-plugin-config/arxiv-scout/` and persist across updates.
+This walks you through setting your Scholar URL, arxiv categories, keywords, and ranking preferences. Settings are saved to `~/.claude-plugin-config/arxiv-scout/` and persist across updates.
+
+**Option B — edit directly (git clone users only):** open `config/user_profile.yaml` and `config/settings.yaml` in the cloned repo and edit them directly. No setup skill needed.
 
 ### 4. Run
 
