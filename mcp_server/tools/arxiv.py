@@ -70,6 +70,11 @@ def _fetch_from_arxiv(categories: list[str], max_results: int) -> list[dict[str,
                 time.sleep(5 * 2 ** attempt)  # 5s, 10s, 20s
             else:
                 raise
+        except (TimeoutError, OSError):
+            if attempt < 3:
+                time.sleep(5 * 2 ** attempt)  # 5s, 10s, 20s
+            else:
+                raise RuntimeError("arxiv API timed out after retries")
     else:
         raise RuntimeError("arxiv API returned 429 after retries")
 
