@@ -109,5 +109,5 @@ arxiv-scout/
 ## Notes
 
 - **Google Scholar scraping** sometimes fails due to bot detection — this is expected. The tool falls back gracefully to keyword-only relevance scoring. Scholar data is cached for 30 days (configurable in `settings.yaml`).
-- **arxiv cache** is per-date, so running `/scout` multiple times on the same day won't re-hit the arxiv API.
+- **arxiv cache** is per-date, so running `/scout` multiple times on the same day won't re-hit the arxiv API. Delete `data/cache.db` to force a fresh fetch.
 - **Token usage** — analysis is done by the Claude Code model you already have open. No additional API billing beyond your normal Claude Code usage.
