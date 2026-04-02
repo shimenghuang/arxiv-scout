@@ -65,7 +65,7 @@ This walks you through setting your Scholar URL, arxiv categories, keywords, and
 /scout
 ```
 
-Claude will fetch today's papers, analyze them against your profile, and display a ranked report. Optionally pass a date to scout a specific day:
+Without a date, `/scout` fetches the most recent papers available from arxiv with no date filter. Pass a date to scout a specific day — only papers submitted the business day before that date will be returned:
 
 ```
 /scout 2026-03-31
