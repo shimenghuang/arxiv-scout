@@ -12,7 +12,7 @@ import urllib.error
 import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -156,6 +156,27 @@ def _load_from_cache(conn: sqlite3.Connection, cache_date: str) -> list[dict]:
     ]
 
 
+def _filter_by_target_date(papers: list[dict], target_date: str) -> list[dict]:
+    """Return papers submitted on the most recent business day before target_date.
+    Looks back up to 4 days to handle weekends and holidays."""
+    target = date.fromisoformat(target_date)
+    for days_back in range(1, 5):
+        submission_date = target - timedelta(days=days_back)
+        matching = []
+        for paper in papers:
+            try:
+                submitted = datetime.fromisoformat(
+                    paper["submitted"].replace("Z", "+00:00")
+                ).date()
+                if submitted == submission_date:
+                    matching.append(paper)
+            except Exception:
+                pass
+        if matching:
+            return matching
+    return []
+
+
 def _keyword_filter(papers: list[dict], keywords: list[str]) -> list[dict]:
     """Keep only papers whose title or abstract contains at least one keyword (case-insensitive).
     If no keywords are configured, all papers pass through."""
@@ -230,25 +251,26 @@ def fetch_papers(
     """
     Main entry point called by the MCP tool.
 
-    Fetches papers for `target_date` (defaults to today UTC) in `categories`,
-    applies keyword pre-filter, and returns the matching papers.
-    Caches raw results so repeated calls within the same day are instant.
+    Without target_date: fetches the latest papers (no date filter), cached under today.
+    With target_date: fetches and filters to papers submitted on the most recent
+    business day before target_date, cached under target_date.
 
     Returns list of dicts: {paper_id, title, authors, abstract, url, submitted}
     """
-    if target_date is None:
-        target_date = date.today().isoformat()
+    explicit_date = target_date is not None
+    cache_key = target_date if explicit_date else date.today().isoformat()
 
     conn = _ensure_db()
-    cached = _load_from_cache(conn, target_date)
+    cached = _load_from_cache(conn, cache_key)
 
     if cached:
-        # Use cached data — no API call needed
         papers = cached
     else:
         papers = _fetch_from_arxiv(categories, max_results)
+        if explicit_date:
+            papers = _filter_by_target_date(papers, target_date)
         if papers:
-            _cache_papers(conn, target_date, categories, papers)
+            _cache_papers(conn, cache_key, categories, papers)
 
     conn.close()
     return _keyword_filter(papers, keywords)
