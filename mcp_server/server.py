@@ -32,24 +32,28 @@ from mcp_server.tools.arxiv import fetch_papers as _fetch_papers, rank_papers as
 from mcp_server.tools.scholar import build_profile_from_scholar
 from mcp_server.tools.analysis import build_analysis_prompt, rank_and_display as _rank_and_display
 
-_PROFILE_PATH = _PROJECT_ROOT / "config" / "user_profile.yaml"
-_SETTINGS_PATH = _PROJECT_ROOT / "config" / "settings.yaml"
+_USER_CONFIG_DIR = Path.home() / ".claude-plugin-config" / "arxiv-scout"
+_PROFILE_PATH = _USER_CONFIG_DIR / "user_profile.yaml"
+_SETTINGS_PATH = _USER_CONFIG_DIR / "settings.yaml"
+_FALLBACK_PROFILE_PATH = _PROJECT_ROOT / "config" / "user_profile.yaml"
+_FALLBACK_SETTINGS_PATH = _PROJECT_ROOT / "config" / "settings.yaml"
 
 app = Server("arxiv-scout")
 
 
 def _load_profile() -> dict:
-    """Load user_profile.yaml, returning defaults if the file is missing or malformed."""
+    """Load user_profile.yaml from user config dir, falling back to project config."""
     defaults = {
         "scholar_url": "",
         "arxiv_categories": ["cs.LG", "cs.CL", "cs.AI"],
         "keywords": [],
         "ranking_criteria": "prioritize novel research directions with clear empirical methodology",
     }
-    if not _PROFILE_PATH.exists():
+    path = _PROFILE_PATH if _PROFILE_PATH.exists() else _FALLBACK_PROFILE_PATH
+    if not path.exists():
         return defaults
     try:
-        with open(_PROFILE_PATH, "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
         return {**defaults, **{k: v for k, v in data.items() if v is not None}}
     except Exception:
@@ -57,19 +61,20 @@ def _load_profile() -> dict:
 
 
 def _load_settings() -> dict:
-    """Load settings.yaml, returning defaults if the file is missing or malformed."""
+    """Load settings.yaml from user config dir, falling back to project config."""
     defaults = {
         "top_n": 10,
         "max_papers_to_fetch": 200,
         "max_papers_to_analyze": 50,
         "save_output": True,
-        "output_dir": "data/reports",
+        "output_dir": str(Path.home() / ".claude-plugin-config" / "arxiv-scout" / "reports"),
         "scholar_cache_ttl_days": 30,
     }
-    if not _SETTINGS_PATH.exists():
+    path = _SETTINGS_PATH if _SETTINGS_PATH.exists() else _FALLBACK_SETTINGS_PATH
+    if not path.exists():
         return defaults
     try:
-        with open(_SETTINGS_PATH, "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
         return {**defaults, **{k: v for k, v in data.items() if v is not None}}
     except Exception:
@@ -196,6 +201,28 @@ async def list_tools() -> list[Tool]:
                 "required": ["analysis_json"],
             },
         ),
+        Tool(
+            name="save_config",
+            description=(
+                "Save the user's arxiv-scout configuration to ~/.claude-plugin-config/arxiv-scout/. "
+                "Accepts profile and/or settings fields and writes them as YAML. "
+                "Call this from the /scout-setup skill after collecting the user's preferences."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "scholar_url": {"type": "string"},
+                    "arxiv_categories": {"type": "array", "items": {"type": "string"}},
+                    "keywords": {"type": "array", "items": {"type": "string"}},
+                    "ranking_criteria": {"type": "string"},
+                    "top_n": {"type": "integer"},
+                    "max_papers_to_fetch": {"type": "integer"},
+                    "max_papers_to_analyze": {"type": "integer"},
+                    "scholar_cache_ttl_days": {"type": "integer"},
+                },
+                "required": [],
+            },
+        ),
     ]
 
 
@@ -286,6 +313,34 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             report += f"\n\n---\n*Report saved to `{saved_path.relative_to(_PROJECT_ROOT)}`*"
 
         return [TextContent(type="text", text=report)]
+
+    elif name == "save_config":
+        _USER_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+        _PROFILE_KEYS = {"scholar_url", "arxiv_categories", "keywords", "ranking_criteria"}
+        _SETTINGS_KEYS = {"top_n", "max_papers_to_fetch", "max_papers_to_analyze", "scholar_cache_ttl_days"}
+
+        profile_updates = {k: v for k, v in arguments.items() if k in _PROFILE_KEYS}
+        settings_updates = {k: v for k, v in arguments.items() if k in _SETTINGS_KEYS}
+
+        def _merge_yaml(path: Path, fallback: Path, updates: dict) -> None:
+            base = {}
+            src = path if path.exists() else fallback
+            if src.exists():
+                try:
+                    base = yaml.safe_load(src.read_text(encoding="utf-8")) or {}
+                except Exception:
+                    pass
+            base.update(updates)
+            path.write_text(yaml.dump(base, allow_unicode=True, sort_keys=False), encoding="utf-8")
+
+        if profile_updates:
+            _merge_yaml(_PROFILE_PATH, _FALLBACK_PROFILE_PATH, profile_updates)
+        if settings_updates:
+            _merge_yaml(_SETTINGS_PATH, _FALLBACK_SETTINGS_PATH, settings_updates)
+
+        saved = list(profile_updates) + list(settings_updates)
+        return [TextContent(type="text", text=f"Config saved to {_USER_CONFIG_DIR}: {', '.join(saved)}")]
 
     else:
         return [TextContent(type="text", text=f"Unknown tool: {name}")]

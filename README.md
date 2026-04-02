@@ -5,54 +5,78 @@ A Claude Code MCP server that fetches, analyzes, and ranks daily arxiv preprints
 ## How it works
 
 1. **Fetch** — hits the arxiv API for today's papers in your configured categories, keyword-filters them, and caches results in SQLite (re-running the same day is instant).
-2. **Profile** — reads your `config/user_profile.yaml` and optionally scrapes your Google Scholar page for past paper titles.
+2. **Profile** — reads your configuration and optionally scrapes your Google Scholar page for past paper titles to improve relevance ranking.
 3. **Analyze** — prepares a structured prompt and hands it to Claude Code (which you already have open), so no separate LLM API calls are needed.
 4. **Rank** — sorts Claude's analysis by novelty score and renders a clean markdown report.
 
 ## Setup
 
-**Prerequisite:** [uv](https://docs.astral.sh/uv/getting-started/installation/) must be installed.
+### 1. Clone and install
 
-### 1. Clone and install dependencies
+**With uv** (recommended — handles dependencies and MCP registration automatically):
 
 ```bash
-git clone https://github.com/your-username/arxiv-scout
+git clone https://github.com/shimenghuang/arxiv-scout
 cd arxiv-scout
 uv sync
 ```
 
-### 2. Edit your profile
+Install uv: [docs.astral.sh/uv](https://docs.astral.sh/uv/getting-started/installation/)
 
-Open `config/user_profile.yaml` and fill in:
+**With pip** (requires manual MCP registration — see step 2b):
 
-- **`scholar_url`** — your Google Scholar profile URL (optional but gives much better relevance scoring)
-- **`arxiv_categories`** — which arxiv categories to monitor (default: cs.LG, cs.CL, cs.AI)
-- **`keywords`** — words/phrases to pre-filter papers by (leave empty to analyze all)
-- **`ranking_criteria`** — plain-language description of what makes a paper exciting to you
+```bash
+git clone https://github.com/shimenghuang/arxiv-scout
+cd arxiv-scout
+pip install mcp pyyaml
+```
 
-### 3. Open the project in Claude Code
+### 2a. Open the project in Claude Code (uv users)
 
 ```bash
 claude
 ```
 
-The project includes a `.mcp.json` that registers the arxiv-scout MCP server automatically. Claude Code will prompt you to trust the server on first open — approve it, and you're done. No manual setup needed.
+The project includes a `.mcp.json` that registers the arxiv-scout MCP server automatically. Claude Code will prompt you to trust the server on first open — approve it.
+
+### 2b. Register the MCP server manually (pip users)
+
+```bash
+claude mcp add arxiv-scout python /path/to/arxiv-scout/mcp_server/server.py
+```
+
+Then open the project directory in Claude Code.
+
+### 3. Configure your profile
+
+Run the setup skill to personalize arxiv-scout to your research interests:
+
+```
+/scout-setup
+```
+
+This walks you through setting your Scholar URL, arxiv categories, keywords, and ranking preferences. Run it once — settings are saved to `~/.claude-plugin-config/arxiv-scout/` and persist across updates.
 
 ### 4. Run
-
-In Claude Code, type:
 
 ```
 /scout
 ```
 
-Claude will fetch today's papers, analyze them against your profile, and display a ranked report.
-
-Optionally pass a date to scout a specific day:
+Claude will fetch today's papers, analyze them against your profile, and display a ranked report. Optionally pass a date to scout a specific day:
 
 ```
 /scout 2026-03-31
 ```
+
+---
+
+> **Claude Code marketplace** — arxiv-scout can also be installed via the Claude Code plugin marketplace. This has not been fully tested and may require manual MCP server registration. Feedback welcome.
+>
+> ```bash
+> claude plugin marketplace add https://github.com/shimenghuang/arxiv-scout
+> claude plugin install arxiv-scout@shimenghuang-arxiv-scout
+> ```
 
 ## Project structure
 
