@@ -16,7 +16,7 @@ A Claude Code MCP server that fetches, analyzes, and ranks daily arxiv preprints
 ### 1. Clone and install dependencies
 
 ```bash
-git clone https://github.com/your-username/arxiv-scout
+git clone https://github.com/shimenghuang/arxiv-scout
 cd arxiv-scout
 uv sync
 ```
@@ -36,7 +36,7 @@ Open `config/user_profile.yaml` and fill in:
 claude
 ```
 
-The project includes a `.mcp.json` that registers the arxiv-scout MCP server automatically. Claude Code will prompt you to trust the server on first open — approve it, and you're done. No manual setup needed.
+The project includes a `.mcp.json` that registers the arxiv-scout MCP server automatically. Claude Code will prompt you to trust the server on first open — approve it, and you're done.
 
 ### 4. Run
 
